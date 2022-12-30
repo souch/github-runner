@@ -2,6 +2,7 @@
 
 if [[ "$@" == "bash" ]]; then
     exec $@
+    exit
 fi
 
 if [[ -z $RUNNER_NAME ]]; then
@@ -73,4 +74,25 @@ else
         --unattended
 fi
 
+if [[ "$@" == "cleanup" ]]; then
+    if [[ -n $GITHUB_ACCESS_TOKEN ]]; then
+
+        echo "Exchanging the GitHub Access Token with a Runner Token (scope: ${SCOPE})..."
+
+        _PROTO="$(echo "${RUNNER_URL}" | grep :// | sed -e's,^\(.*://\).*,\1,g')"
+        _URL="$(echo "${RUNNER_URL/${_PROTO}/}")"
+        _PATH="$(echo "${_URL}" | grep / | cut -d/ -f2-)"
+
+        RUNNER_TOKEN="$(curl -XPOST -fsSL \
+            -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/${SCOPE}/${_PATH}/actions/runners/registration-token" \
+            | jq -r '.token')"
+    fi
+    
+    ./config.sh remove --token "$RUNNER_TOKEN"
+    exit
+fi
+
 exec "$@"
+

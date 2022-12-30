@@ -21,8 +21,11 @@ build: ## Build the image
 shell: ## Creates a shell inside the container for debug purposes
 	docker run -it $(DOCKER_APP_NAME) bash
 
-shell-compose: ## Creates a shell inside the docker-compose service for debug purposes
-	docker-compose run --rm runner bash
+#shell-compose: ## Creates a shell inside the docker-compose service for debug purposes
+	#docker-compose run --rm runner bash
 
-start: ## start the runner (ACCESS_TOKEN and REPOSITORY_URL must be set)
+start: ## Start the runner (ACCESS_TOKEN and REPOSITORY_URL must be set)
 	docker run -it -e RUNNER_NAME=$(RUNNER_NAME) -e GITHUB_ACCESS_TOKEN=$(ACCESS_TOKEN) -e RUNNER_REPOSITORY_URL=$(REPOSITORY_URL) $(DOCKER_APP_NAME)
+
+cleanup: ## Unregister runner from github
+	docker run -it -e RUNNER_NAME=$(RUNNER_NAME) -e GITHUB_ACCESS_TOKEN=$(ACCESS_TOKEN) -e RUNNER_REPOSITORY_URL=$(REPOSITORY_URL) $(DOCKER_APP_NAME) cleanup 
